@@ -19,9 +19,11 @@ if (!$data || !isset($data["city"])) {
 }
 
 $city = $data["city"];
+$date = isset($data["date"]) ? strtotime($data["date"]) : time();
 $now = time();
+$utcNow = new DateTime("now", new DateTimeZone("UTC"));
 
-// Connect to SQLite DB
+// Connect to db
 $db = new PDO('sqlite:weather.db');
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -32,7 +34,7 @@ $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $cacheValid = false;
 if ($row) {
-    // If cached less than 30 minutes ago, use it
+    // if cached less than 30 minutes ago, use it
     if ($now - intval($row['last_checked']) < 1800) { // 1800 sec = 30 min
         $cacheValid = true;
         $weatherData = json_decode($row['data'], true);
@@ -62,9 +64,31 @@ if (!$cacheValid) {
     ]);
 }
 
+$closest = null;
+$minDiff = PHP_INT_MAX;
+
+foreach ($weatherData['timelines']['minutely'] as $entry) {
+    $entryTime = new DateTime($entry['time'], new DateTimeZone("UTC"));
+    $diff = abs($entryTime->getTimestamp() - $utcNow->getTimestamp());
+
+    if ($diff < $minDiff) {
+        $minDiff = $diff;
+        $closest = $entry;
+    }
+}
+// Filter hourly predictions after now
+$futurePredictions = array_filter(
+    $weatherData['timelines']['hourly'],
+    function ($entry) use ($now) {
+        return strtotime($entry['time']) > $now;
+    }
+);
+
+$futurePredictions = array_slice(array_values($futurePredictions), 0, 6);
 
 // Return weather
 echo json_encode([
     "city" => $city,
-    "weather" => $weatherData['timelines']['minutely'][0]
+    "weather" => $closest,
+    "predictions" => $futurePredictions
 ]);
