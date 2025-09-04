@@ -40,38 +40,47 @@ export function WeatherWidget() {
         predictions: { time: string; values: WeatherData }[];
     } | null>(null);
 
-    const [city, setCity] = useState<string>("Meppel");
+    const defaultCity = "Meppel";
+
+    const [city, setCity] = useState<string>(defaultCity);
 
     console.log("Current city:", city);
 
     // Get current position and geocode to city
     useEffect(() => {
+        // If navigator exists (browser supports geolocation)
         if (navigator.geolocation) {
+            // Get the current location of the user
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     try {
+                        // Reverse geocode to get city name using OpenStreetMap's Nominatim API
                         const { latitude, longitude } = position.coords;
                         const res = await fetch(
                             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
                         );
                         const json = await res.json();
+
+                        // Get city, town, or village from the address
                         const currentCity =
                             json.address?.city ||
                             json.address?.town ||
                             json.address?.village ||
-                            "Meppel";
+                            defaultCity;
+
+                        // Set the city state
                         setCity(currentCity);
                     } catch (err) {
                         console.error(
                             "Reverse geocoding failed, using default",
                             err
                         );
-                        setCity("Meppel");
+                        setCity(defaultCity);
                     }
                 },
                 () => {
                     console.log("Cannot get location: Default to Meppel");
-                    setCity("Meppel");
+                    setCity(defaultCity);
                 }
             );
         }
@@ -79,6 +88,7 @@ export function WeatherWidget() {
 
     // Fetch weather whenever city changes
     useEffect(() => {
+        // Fetch to our local backend
         fetch("http://localhost:8000", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -93,9 +103,10 @@ export function WeatherWidget() {
         return <div className="weather-widget">Loading weather...</div>;
     }
 
-    console.log(data);
-
+    // Extract weather data
     const weather = data.weather.values;
+
+    // Determine if it's day or night based on the hour
     const time = new Date(data.weather.time);
     const isDay = time.getHours() >= 6 && time.getHours() < 18;
 
@@ -234,6 +245,10 @@ function Predictions({
     day: boolean;
     howMany: number;
 }) {
+    if (predictions.length === 0) {
+        return <>No predictions available.</>;
+    }
+
     return (
         <div className="predictions">
             {predictions.slice(0, howMany).map((p, idx) => (
