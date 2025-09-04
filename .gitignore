@@ -1,3 +1,6 @@
+# DB
+weather-api/weather.db
+
 # Logs
 logs
 *.log
