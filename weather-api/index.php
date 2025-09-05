@@ -67,6 +67,7 @@ if (!$cacheValid) {
 $closest = null;
 $minDiff = PHP_INT_MAX;
 
+// Find closest minute data to now
 foreach ($weatherData['timelines']['minutely'] as $entry) {
     $entryTime = new DateTime($entry['time'], new DateTimeZone("UTC"));
     $diff = abs($entryTime->getTimestamp() - $utcNow->getTimestamp());
@@ -76,6 +77,7 @@ foreach ($weatherData['timelines']['minutely'] as $entry) {
         $closest = $entry;
     }
 }
+
 // Filter hourly predictions after now
 $futurePredictions = array_filter(
     $weatherData['timelines']['hourly'],

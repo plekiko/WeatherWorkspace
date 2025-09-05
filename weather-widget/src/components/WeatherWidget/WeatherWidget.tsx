@@ -7,8 +7,9 @@ import {
     IconChevronRight,
     IconChevronUp,
 } from "@tabler/icons-react";
+import { Prediction } from "./Prediction";
 
-interface WeatherData {
+export interface WeatherData {
     altimeterSetting: number;
     cloudBase: number;
     cloudCeiling: number;
@@ -43,8 +44,6 @@ export function WeatherWidget() {
     const defaultCity = "Meppel";
 
     const [city, setCity] = useState<string>(defaultCity);
-
-    console.log("Current city:", city);
 
     // Get current position and geocode to city
     useEffect(() => {
@@ -134,6 +133,10 @@ function WeatherWidgetComponent({
     const [showDetails, setShowDetails] = useState<boolean>(false);
     const [showPredictions, setShowPredictions] = useState<boolean>(false);
 
+    const weatherIcon = `tomorrow-icons/${weatherData.weatherCode}${
+        day ? "0" : "1"
+    }.svg`;
+
     return (
         <div className="widget-container">
             <div
@@ -149,9 +152,7 @@ function WeatherWidgetComponent({
                 </div>
                 <div className="widget-main">
                     <img
-                        src={`tomorrow-icons/${weatherData.weatherCode}${
-                            day ? "0" : "1"
-                        }.svg`}
+                        src={weatherIcon}
                         alt={weatherData.weatherCode.toString()}
                         className="weather-icon"
                     />
@@ -254,36 +255,6 @@ function Predictions({
             {predictions.slice(0, howMany).map((p, idx) => (
                 <Prediction key={idx} entry={p} day={day} />
             ))}
-        </div>
-    );
-}
-
-function Prediction({
-    entry,
-    day,
-}: {
-    entry: { time: string; values: WeatherData };
-    day: boolean;
-}) {
-    const time = new Date(entry.time);
-    const hour = time.getHours().toString().padStart(2, "0");
-    const minutes = time.getMinutes().toString().padStart(2, "0");
-
-    return (
-        <div className="prediction">
-            <img
-                className="prediction-icon"
-                src={`tomorrow-icons/${entry.values.weatherCode}${
-                    day ? "0" : "1"
-                }.svg`}
-                alt={entry.values.weatherCode.toString()}
-            />
-            <span className="prediction-time">
-                {hour}:{minutes}
-            </span>
-            <span className="prediction-temperature">
-                {entry.values.temperature}°C
-            </span>
         </div>
     );
 }

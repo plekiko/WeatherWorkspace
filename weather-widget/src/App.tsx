@@ -1,7 +1,11 @@
 import { WeatherWidget } from "./components/WeatherWidget/WeatherWidget";
 
 function App() {
-    return <WeatherWidget />;
+    return (
+        <>
+            <WeatherWidget />
+        </>
+    );
 }
 
 export default App;
