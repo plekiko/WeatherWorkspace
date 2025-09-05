@@ -8,6 +8,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+require __DIR__ . '/vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
 // Read input
 $body = file_get_contents("php://input");
 $data = json_decode($body, true);
@@ -42,7 +46,14 @@ if ($row) {
 }
 
 if (!$cacheValid) {
-    $apiKey = "luzy4D0cZwIXQIe7t6B1w5melDrNmkvU";
+    // Get the api key from the environment variable
+    $apiKey = $_ENV['API_KEY'] ?? null;
+
+    if (!$apiKey) {
+        http_response_code(500);
+        echo json_encode(["error" => "API key not set in environment"]);
+        exit;
+    }
 
     $url = "https://api.tomorrow.io/v4/weather/forecast?location=" . urlencode($city) . "&apikey={$apiKey}";
     

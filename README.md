@@ -13,6 +13,15 @@
     php init_db.php
     ```
 
+#### Installing Composer
+
+1. Open a terminal in the `weather-api` directory.
+2. Run the following command to initialize the database:
+
+    ```bash
+    composer install
+    ```
+
 #### Starting the Server
 
 1. Open a terminal in the `weather-api` directory.
